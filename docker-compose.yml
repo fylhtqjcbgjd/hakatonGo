@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  golang:
+    env_file:
+      - .env
+    build: ./infrastructure/golang
+    container_name: "golang-app"
+    tty: true
+    volumes:
+      - ./app/:/go/app/
+    ports:
+      - "8080:8080"
+
+  mysql:
+    image: mysql:5.7
+    container_name: "golang-mysql"
+    tty: true
+    ports:
+      - ${DB_PORT}:3306
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - ./infrastructure/mysql/conf/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./infrastructure/mysql/db/sql/:/docker-entrypoint-initdb.d
+      - golang-mysql-db:/var/lib/mysql
+
+volumes:
+  golang-mysql-db:
+    driver: local
