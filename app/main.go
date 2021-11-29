@@ -10,7 +10,7 @@ import (
 type Transaction struct {
 	UserId		int 	`json:"user_id"`
 	Amount		int 	`json:"amount"`
-	Category	string 	`json:"category"`
+	CategoryName	string 	`json:"category"`
 }
 
 type Category struct {
@@ -33,37 +33,52 @@ const (
 func main()  {
 
 	transaction := ParseJson(JSON_TRANSACTION)
-
+//var categories := make([]Category)
+//	categories
 	report := make(map[int]Report)
-	panic(report[0].UserId)
-	report = append()
-	report[0].UserId = transaction[0].UserId
-	report[0].Sum = transaction[0].Amount
-	report[0].Categories[0].Name = transaction[0].Category
-	report[0].Categories[0].Count = 1
-	report[0].Categories[0].Sum = transaction[0].Amount
-
-	for i := 1; i < len(transaction); i++ {
+	//report[transaction[0].UserId] = Report{
+	//	transaction[0].UserId,
+	//	transaction[0].Amount,
+	//	[]Category{
+	//		Category{
+	//			transaction[0].CategoryName,
+	//			1,
+	//			transaction[0].Amount,
+	//		},
+	//	},
+	//}
+	for i := 0; i < len(transaction); i++ {
 		//fmt.Println(transaction[i].UserId)
-		for j := 0; j <= len(report); j++ {
-			if transaction[i].UserId == report[j].UserId {
-				report[j].Sum += transaction[i].Amount
-				for a := 0; a <= len(report[j].Categories); a++ {
-					if transaction[i].Category == report[j].Categories[a].Name {
-						report[j].Categories[a].Count ++
-						report[j].Categories[a].Sum += transaction[i].Amount
-					} else {
-						report[j].Categories[a].Name = transaction[i].Category
-						report[j].Categories[a].Count = 1
-						report[j].Categories[a].Sum = transaction[i].Amount
-					}
+		if elemReport, ok := report[transaction[i].UserId]; ok {
+			elemReport.Sum += transaction[i].Amount
+			fmt.Println(elemReport)
+			for j := 0; j < len(elemReport.Categories); j++ {
+				if  elemReport.Categories[j].Name == transaction[i].CategoryName {
+					elemReport.Categories[j].Count += 1
+					elemReport.Categories[j].Sum += transaction[i].Amount
+				} else {
+					elemReport.Categories = append(
+						elemReport.Categories,
+						Category{
+							transaction[i].CategoryName,
+							1,
+							transaction[i].Amount,
+						})
 				}
-			} else {
-				report[j].UserId = transaction[i].UserId
-				report[j].Sum = transaction[i].Amount
-				report[j].Categories[0].Name = transaction[i].Category
-				report[j].Categories[0].Count = 1
-				report[j].Categories[0].Sum = transaction[i].Amount
+			}
+			//fmt.Println(elemReport)
+			report[transaction[i].UserId] = elemReport
+		} else {
+			report[transaction[i].UserId] = Report{
+				transaction[i].UserId,
+				transaction[i].Amount,
+				[]Category{
+					Category{
+						transaction[i].CategoryName,
+						1,
+						transaction[i].Amount,
+					},
+				},
 			}
 		}
 	}
@@ -93,7 +108,7 @@ func ParseJson(pathFile string) []Transaction {
 
 	defer jsonFile.Close()
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	transaction := make([]Transaction)
+	transaction := []Transaction{}
 
 	json.Unmarshal([]byte(byteValue), &transaction)
 
